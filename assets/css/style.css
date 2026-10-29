@@ -275,3 +275,14 @@ img, video { display: block; max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; }
 }
+
+/* Descriptive text set in the mono face, like the project facts */
+.project-body p,
+.panel-info p,
+.text-page p:not(.lead) {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  line-height: 1.75;
+  letter-spacing: 0.01em;
+  color: #c4c4c4;
+}
