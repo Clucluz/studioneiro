@@ -1,0 +1,271 @@
+/* Louis Cluzel — studioneiro.com */
+
+@font-face { font-family: "Doto"; src: url("../fonts/Doto.woff") format("woff"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Geist"; src: url("../fonts/Geist.woff") format("woff"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url("../fonts/GeistMono.woff") format("woff"); font-weight: 100 900; font-display: swap; }
+
+:root {
+  --black: #000000;
+  --white: #ffffff;
+  --cream: #ece7dd;
+  --grey: #8c8c8c;
+  --grey-dim: #555555;
+  --line: #262626;
+  --unlit: #1f1f1f;
+
+  --f-display: "Doto", "Geist Mono", monospace;
+  --f-sans: "Geist", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "Geist Mono", ui-monospace, monospace;
+
+  --gutter: clamp(16px, 4vw, 48px);
+  --frame: clamp(16px, 5vw, 72px);
+  --max: 1440px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { background: var(--black); color-scheme: dark; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--f-sans);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a { color: inherit; text-decoration: none; }
+img, video { display: block; max-width: 100%; }
+
+:focus-visible { outline: 1px solid var(--white); outline-offset: 4px; }
+
+.mono { font-family: var(--f-mono); font-size: 12px; letter-spacing: 0.02em; color: var(--grey); }
+
+/* ---------- Header ---------- */
+
+.site-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: 64px;
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: var(--black);
+  z-index: 10;
+}
+
+.site-header .brand { font-family: var(--f-sans); font-size: 15px; font-weight: 500; letter-spacing: -0.01em; color: var(--white); justify-self: center; }
+.site-header .where { justify-self: start; }
+
+.site-nav { justify-self: end; display: flex; gap: clamp(16px, 3vw, 32px); align-items: center; }
+.site-nav a { font-family: var(--f-mono); font-size: 12px; color: var(--grey); transition: color .2s; }
+.site-nav a:hover, .site-nav a[aria-current="page"] { color: var(--white); }
+.site-nav .lang { border-left: 1px solid var(--line); padding-left: clamp(16px, 3vw, 32px); }
+
+/* ---------- Frame with corner marks ---------- */
+
+.stage {
+  flex: 1;
+  width: 100%;
+  max-width: var(--max);
+  margin: 0 auto;
+  border-left: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  padding: var(--frame) var(--frame) 0;
+}
+
+.marked { position: relative; border: 1px solid var(--line); }
+.marked::before, .marked::after,
+.marked > .mk::before, .marked > .mk::after {
+  content: "";
+  position: absolute;
+  width: 12px; height: 12px;
+  border-color: var(--white);
+  border-style: solid;
+  pointer-events: none;
+}
+.marked::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+.marked::after { top: -1px; right: -1px; border-width: 1px 1px 0 0; }
+.marked > .mk::before { bottom: -1px; left: -1px; border-width: 0 0 1px 1px; }
+.marked > .mk::after { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+
+/* ---------- Hero : the name, lit by a follow-spot ---------- */
+
+.hero {
+  height: min(72vh, 720px);
+  min-height: 420px;
+  display: grid;
+  place-items: center;
+  cursor: crosshair;
+  --x: 50%;
+  --y: 50%;
+  --r: clamp(140px, 22vw, 320px);
+}
+
+.hero-name { position: relative; text-align: center; line-height: .86; user-select: none; }
+.hero-name span {
+  display: block;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-variation-settings: "ROND" 100;
+  font-size: clamp(64px, 15.5vw, 228px);
+  letter-spacing: -0.02em;
+}
+.hero-name .unlit { color: var(--unlit); }
+.hero-name .lit {
+  position: absolute;
+  inset: 0;
+  color: var(--white);
+  -webkit-mask-image: radial-gradient(circle var(--r) at var(--x) var(--y), #000 0%, rgba(0,0,0,.55) 45%, transparent 100%);
+          mask-image: radial-gradient(circle var(--r) at var(--x) var(--y), #000 0%, rgba(0,0,0,.55) 45%, transparent 100%);
+}
+
+.hero-caption {
+  position: absolute;
+  left: 20px; right: 20px; bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* ---------- Works index ---------- */
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 72px 0 16px;
+  border-bottom: 1px solid var(--line);
+}
+.section-head h2 { font-size: 15px; font-weight: 500; }
+
+.works { list-style: none; position: relative; }
+.works li { border-bottom: 1px solid var(--line); }
+.works a {
+  display: grid;
+  grid-template-columns: 72px 1fr minmax(0, 1fr) 24px;
+  gap: 24px;
+  align-items: baseline;
+  padding: 18px 0;
+  transition: padding-left .25s ease;
+}
+.works .title { font-size: clamp(18px, 2vw, 24px); font-weight: 400; letter-spacing: -0.015em; color: var(--white); }
+.works .place { justify-self: start; }
+.works .arrow { justify-self: end; color: var(--grey-dim); transition: color .2s; }
+.works a:hover .arrow, .works a:focus-visible .arrow { color: var(--white); }
+.works a:hover .place, .works a:focus-visible .place { color: var(--cream); }
+.works .thumb { display: none; }
+
+/* hover preview, follows the pointer row */
+.preview {
+  position: fixed;
+  width: 340px;
+  aspect-ratio: 4 / 3;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity .2s;
+  z-index: 5;
+}
+.preview.on { opacity: 1; }
+
+/* ---------- Placeholder light panels (to be replaced by real photos) ---------- */
+
+.ph { position: relative; background: #050505; overflow: hidden; width: 100%; height: 100%; }
+.ph::after { content: ""; position: absolute; inset: 0; }
+.ph-1::after { background: radial-gradient(ellipse 18% 70% at 50% 100%, rgba(255,244,225,.9), rgba(255,244,225,.15) 60%, transparent 75%); }
+.ph-2::after { background: linear-gradient(115deg, transparent 42%, rgba(160,210,255,.75) 50%, transparent 58%), radial-gradient(circle at 70% 30%, rgba(160,210,255,.25), transparent 40%); }
+.ph-3::after { background: repeating-linear-gradient(90deg, transparent 0 46px, rgba(255,255,255,.85) 46px 48px), linear-gradient(transparent 30%, #050505 92%); }
+.ph-4::after { background: radial-gradient(circle at 50% 45%, rgba(255,190,120,.85), rgba(255,140,60,.2) 25%, transparent 45%); }
+.ph-5::after { background: conic-gradient(from 200deg at 50% 0%, transparent 0deg, rgba(255,255,255,.7) 8deg, transparent 16deg, transparent 40deg, rgba(255,255,255,.5) 46deg, transparent 52deg); }
+.ph-6::after { background: linear-gradient(to top, rgba(110,255,220,.55) 0 2px, transparent 2px), radial-gradient(ellipse 60% 25% at 50% 100%, rgba(110,255,220,.35), transparent 70%); }
+
+/* ---------- Project page ---------- */
+
+.project-hero { aspect-ratio: 16 / 9; }
+
+.project-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  padding: 56px 0 40px;
+  border-bottom: 1px solid var(--line);
+}
+.project-head h1 { font-size: clamp(32px, 4.4vw, 60px); font-weight: 400; letter-spacing: -0.03em; line-height: 1.02; }
+
+.facts { display: grid; grid-template-columns: 120px 1fr; row-gap: 10px; align-content: start; }
+.facts dt { font-family: var(--f-mono); font-size: 12px; color: var(--grey-dim); }
+.facts dd { font-family: var(--f-mono); font-size: 12px; color: var(--white); }
+
+.project-body { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; padding: 48px 0 72px; }
+.project-body section { max-width: 62ch; }
+.project-body h2 { font-size: 15px; font-weight: 500; margin-bottom: 12px; }
+.project-body p { color: #cfcfcf; }
+.project-body p + p { margin-top: 1em; }
+
+.gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--frame); padding-bottom: var(--frame); }
+.gallery .marked { aspect-ratio: 4 / 5; }
+.gallery .wide { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
+
+.pager {
+  display: flex; justify-content: space-between;
+  border-top: 1px solid var(--line);
+  padding: 20px 0;
+}
+.pager a:hover { color: var(--white); }
+
+/* ---------- About / Contact ---------- */
+
+.text-page { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; padding: 24px 0 96px; }
+.text-page h1 { font-family: var(--f-display); font-weight: 700; font-variation-settings: "ROND" 100; font-size: clamp(48px, 7vw, 104px); line-height: .9; color: var(--white); }
+.text-page .lead { font-size: clamp(20px, 2vw, 26px); line-height: 1.4; letter-spacing: -0.015em; max-width: 34ch; }
+.text-page p { max-width: 62ch; color: #cfcfcf; }
+.text-page p + p { margin-top: 1em; }
+
+.contact-list { list-style: none; border-top: 1px solid var(--line); }
+.contact-list li { display: grid; grid-template-columns: 120px 1fr; border-bottom: 1px solid var(--line); padding: 18px 0; align-items: baseline; }
+.contact-list a { font-size: clamp(18px, 2vw, 24px); letter-spacing: -0.015em; }
+.contact-list a:hover { color: var(--cream); }
+
+/* ---------- Footer ---------- */
+
+.site-footer {
+  border-top: 1px solid var(--line);
+  padding: 20px var(--gutter);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* ---------- Small screens ---------- */
+
+@media (max-width: 760px) {
+  .site-header { grid-template-columns: 1fr auto; }
+  .site-header .where { display: none; }
+  .site-header .brand { justify-self: start; }
+  .hero { height: 56vh; min-height: 360px; }
+  .hero-name span { font-size: 25vw; }
+  .hero-caption { flex-direction: column; gap: 2px; }
+  .works a { grid-template-columns: 1fr 24px; gap: 4px 12px; padding: 16px 0; }
+  .works .year { grid-column: 1; grid-row: 1; }
+  .works .title { grid-column: 1; grid-row: 2; }
+  .works .place { grid-column: 1; grid-row: 3; }
+  .works .arrow { grid-column: 2; grid-row: 2; }
+  .works .thumb { display: block; grid-column: 1 / -1; grid-row: 4; aspect-ratio: 16 / 9; margin-top: 12px; border: 1px solid var(--line); }
+  .preview { display: none; }
+  .project-head, .project-body, .text-page { grid-template-columns: 1fr; gap: 32px; }
+  .facts { grid-template-columns: 100px 1fr; }
+  .gallery { grid-template-columns: 1fr; }
+  .gallery .marked, .gallery .wide { aspect-ratio: 4 / 3; }
+  .site-footer { flex-direction: column; gap: 4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
