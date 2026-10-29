@@ -260,5 +260,5 @@ img, video { display: block; max-width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; animation: none !important; }
+  * { animation: none !important; }
 }

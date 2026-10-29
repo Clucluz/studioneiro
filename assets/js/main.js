@@ -1,7 +1,6 @@
 (function () {
   const P = window.PROJECTS || [];
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const fine = window.matchMedia("(pointer: fine)").matches;
 
   /* ------------------------------------------------------------------
      LED matrix text.
@@ -78,7 +77,7 @@
       ctx.drawImage(board, 0, 0);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const r = pitch * 0.34;
-      const lit = !spot || reduce;
+      const lit = !spot || (reduce && !manual);
       const R = Math.max(160, Math.min(W, 1200) * 0.24);
       // bucket the dots by brightness so each level is one path
       const levels = 12, buckets = Array.from({ length: levels }, () => []);
@@ -100,24 +99,31 @@
       });
     }
 
-    if (spot && !reduce) {
-      if (fine) {
-        box.addEventListener("pointermove", (e) => {
-          const rc = canvas.getBoundingClientRect();
-          manual = true; sx = e.clientX - rc.left; sy = e.clientY - rc.top;
-        });
-        box.addEventListener("pointerleave", () => { manual = false; t0 = performance.now(); });
-      }
-      const tick = (t) => {
-        if (!manual) {
+    if (spot) {
+      // The follow-spot always answers the mouse. The automatic sweep only runs
+      // when the system allows motion; otherwise the text stays fully lit at rest.
+      let raf = 0;
+      const frame = (t) => {
+        raf = 0;
+        if (!manual && !reduce) {
           const k = (t - t0) / 4200;
           sx = W * (0.5 + 0.42 * Math.sin(k));
           sy = H * (0.45 + 0.18 * Math.sin(k * 1.6));
         }
         draw();
-        requestAnimationFrame(tick);
+        if (!reduce || manual) raf = requestAnimationFrame(frame);
       };
-      requestAnimationFrame(tick);
+      box.addEventListener("pointermove", (e) => {
+        if (e.pointerType === "touch") return;
+        const rc = canvas.getBoundingClientRect();
+        manual = true; sx = e.clientX - rc.left; sy = e.clientY - rc.top;
+        if (!raf) raf = requestAnimationFrame(frame);
+      });
+      box.addEventListener("pointerleave", () => {
+        manual = false; t0 = performance.now();
+        if (reduce) { cancelAnimationFrame(raf); raf = 0; draw(); }
+      });
+      if (!reduce) raf = requestAnimationFrame(frame);
     }
 
     let rt;
