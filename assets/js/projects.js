@@ -1,36 +1,24 @@
 // Project list, newest first.
 // Placeholder content — will be replaced by the real projects from the Instagram archive.
-window.PROJECTS = [
-  {
-    slug: "project-06", year: 2026, title: "Project title six", place: "Venue, City",
-    visual: "ph-6",
-    facts: { Year: "2026", Venue: "Venue name", City: "City, Country", Commission: "Commissioner", Collaborators: "Name, Name", Photos: "Photographer name" },
+(function () {
+  const base = [
+    [2026, "Project title nine", "Venue, City", "ph-6"],
+    [2026, "Project title eight", "Festival, City", "ph-7"],
+    [2025, "Project title seven", "Venue, City", "ph-5"],
+    [2025, "Project title six", "Theatre, City", "ph-9"],
+    [2025, "Project title five", "Festival, City", "ph-4"],
+    [2024, "Project title four", "Theatre, City", "ph-3"],
+    [2024, "Project title three", "Gallery, City", "ph-8"],
+    [2023, "Project title two", "Gallery, City", "ph-2"],
+    [2022, "Project title one", "Venue, City", "ph-1"]
+  ];
+  const pool = ["ph-1", "ph-2", "ph-3", "ph-4", "ph-5", "ph-6", "ph-7", "ph-8", "ph-9"];
+  window.PROJECTS = base.map(([year, title, place, visual], i) => ({
+    slug: "project-" + String(base.length - i).padStart(2, "0"),
+    year, title, place, visual,
+    images: [visual, pool[(i * 4 + 2) % 9], pool[(i * 2 + 5) % 9]].slice(0, 2 + (i % 2)),
+    facts: { Year: String(year), Venue: place.split(", ")[0] + " name", City: "City, Country", Commission: "Commissioner", Collaborators: "Name, Name", Photos: "Photographer name" },
     intent: "A short paragraph on the idea behind the piece: what the light does to the space, the atmosphere it was meant to create, the question it asks.",
     making: "How it was built: fixtures, sources, control, materials, the constraints of the site and the choices they forced."
-  },
-  {
-    slug: "project-05", year: 2025, title: "Project title five", place: "Venue, City", visual: "ph-5",
-    facts: { Year: "2025", Venue: "Venue name", City: "City, Country", Collaborators: "Name, Name", Photos: "Photographer name" },
-    intent: "A short paragraph on the idea behind the piece.", making: "How it was built."
-  },
-  {
-    slug: "project-04", year: 2025, title: "Project title four", place: "Festival, City", visual: "ph-4",
-    facts: { Year: "2025", Venue: "Festival name", City: "City, Country", Photos: "Photographer name" },
-    intent: "A short paragraph on the idea behind the piece.", making: "How it was built."
-  },
-  {
-    slug: "project-03", year: 2024, title: "Project title three", place: "Theatre, City", visual: "ph-3",
-    facts: { Year: "2024", Venue: "Theatre name", City: "City, Country", Commission: "Company name", Photos: "Photographer name" },
-    intent: "A short paragraph on the idea behind the piece.", making: "How it was built."
-  },
-  {
-    slug: "project-02", year: 2023, title: "Project title two", place: "Gallery, City", visual: "ph-2",
-    facts: { Year: "2023", Venue: "Gallery name", City: "City, Country", Photos: "Photographer name" },
-    intent: "A short paragraph on the idea behind the piece.", making: "How it was built."
-  },
-  {
-    slug: "project-01", year: 2022, title: "Project title one", place: "Venue, City", visual: "ph-1",
-    facts: { Year: "2022", Venue: "Venue name", City: "City, Country", Photos: "Photographer name" },
-    intent: "A short paragraph on the idea behind the piece.", making: "How it was built."
-  }
-];
+  }));
+})();
