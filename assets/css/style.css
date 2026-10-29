@@ -127,10 +127,16 @@ img, video { display: block; max-width: 100%; }
 }
 .section-head h2 { font-size: 15px; font-weight: 500; }
 
+.works-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 40px;
+}
+
 .year-row {
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr) 260px;
-  gap: 32px;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 24px;
   padding: 24px 0;
   border-bottom: 1px solid var(--line);
 }
@@ -142,26 +148,30 @@ img, video { display: block; max-width: 100%; }
   gap: 12px;
 }
 
-.tile { display: block; }
-.tile .frame { aspect-ratio: 4 / 5; border-color: var(--line); }
+.tile { display: block; transition: opacity .25s ease; }
+.tile .frame { aspect-ratio: 4 / 5; }
 .tile .frame::before, .tile .frame::after,
 .tile .frame > .mk::before, .tile .frame > .mk::after { opacity: 0; transition: opacity .2s; }
-.tile .ph { transition: opacity .3s; }
 .tile .cap { display: none; }
 
-.titles { list-style: none; align-self: start; position: sticky; top: 88px; }
-.titles a { display: block; padding: 6px 0 10px; border-bottom: 1px solid var(--line); color: var(--grey); transition: color .2s; }
-.titles li:first-child a { padding-top: 0; }
-.titles .t { display: block; font-size: 17px; letter-spacing: -0.01em; line-height: 1.3; }
-.titles .mono { color: var(--grey-dim); transition: color .2s; }
-
-/* linked highlight: hovering a tile or a title lights its partner, dims the rest */
-.works.hovering .tile .ph { opacity: .35; }
-.works .tile.on .ph { opacity: 1; }
+/* hovering a project: its images keep their light and get corner marks, the rest fade out */
+.works.hovering .tile { opacity: .12; }
+.works.hovering .tile.on { opacity: 1; }
 .works .tile.on .frame::before, .works .tile.on .frame::after,
 .works .tile.on .frame > .mk::before, .works .tile.on .frame > .mk::after { opacity: 1; }
-.works .titles a.on { color: var(--white); }
-.works .titles a.on .mono { color: var(--grey); }
+
+/* the one panel on the right */
+.panel {
+  position: sticky;
+  top: 88px;
+  align-self: start;
+  padding-top: 24px;
+  min-height: 240px;
+}
+.panel-empty { color: var(--grey-dim); }
+.panel-info h3 { font-size: 24px; font-weight: 400; letter-spacing: -0.02em; line-height: 1.15; margin: 6px 0 20px; }
+.panel-info .facts { grid-template-columns: 112px 1fr; padding: 14px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+.panel-info p { font-size: 14px; color: #bdbdbd; margin-bottom: 16px; }
 
 /* ---------- Placeholder light panels (replaced by real photos later) ---------- */
 
@@ -208,16 +218,18 @@ img, video { display: block; max-width: 100%; }
 
 /* ---------- About / Contact ---------- */
 
-.page-title { height: clamp(150px, 22vw, 300px); }
+.led-title { height: clamp(40px, 4.4vw, 60px); max-width: 420px; }
 
-.text-page { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; padding: 48px 0 96px; }
+.text-page { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; padding: 24px 0 96px; }
+.text-page .lead { margin-bottom: 1.4em; }
 .text-page .lead { font-size: clamp(20px, 2vw, 26px); line-height: 1.4; letter-spacing: -0.015em; max-width: 34ch; }
 .text-page p { max-width: 62ch; color: #cfcfcf; }
 .text-page p + p { margin-top: 1em; }
 
 .contact-list { list-style: none; border-top: 1px solid var(--line); }
-.contact-list li { display: grid; grid-template-columns: 120px 1fr; border-bottom: 1px solid var(--line); padding: 18px 0; align-items: baseline; }
-.contact-list a, .contact-list .v { font-size: clamp(18px, 2vw, 24px); letter-spacing: -0.015em; }
+.contact-list li { display: grid; grid-template-columns: 110px 1fr; border-bottom: 1px solid var(--line); padding: 18px 0; align-items: baseline; }
+.contact-list .mono { font-size: 13px; }
+.contact-list a, .contact-list .v { font-size: 16px; letter-spacing: -0.005em; }
 .contact-list a:hover { color: var(--cream); }
 
 /* ---------- Footer ---------- */
@@ -233,8 +245,9 @@ img, video { display: block; max-width: 100%; }
 /* ---------- Medium screens ---------- */
 
 @media (max-width: 1080px) {
-  .year-row { grid-template-columns: 64px minmax(0, 1fr); }
-  .titles { display: none; }
+  .works-layout { grid-template-columns: 1fr; }
+  .panel { display: none; }
+  .works.hovering .tile { opacity: 1; }
   .tile.extra { display: none; }
   .tiles { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
   .tile .cap { display: block; margin-top: 8px; }

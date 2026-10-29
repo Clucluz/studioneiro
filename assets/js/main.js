@@ -25,25 +25,33 @@
       canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
       canvas.style.width = W + "px"; canvas.style.height = H + "px";
 
-      pitch = W < 600 ? 4 : W < 1000 ? 5 : 6;
-      const padX = W < 600 ? 20 : 40;
+      const ds = canvas.dataset;
+      pitch = ds.pitch ? +ds.pitch : W < 600 ? 4 : W < 1000 ? 5 : 6;
+      const padX = ds.pad !== undefined ? +ds.pad : W < 600 ? 20 : 40;
       const padBottom = spot ? (W < 600 ? 70 : 64) : 0;
+      const center = ds.align === "center";
 
-      // fit the font size to the box
+      // fit the font size to the box, using the real ink bounds of the text
       const off = document.createElement("canvas");
       off.width = W; off.height = H;
       const o = off.getContext("2d");
-      const lh = 1.0;
-      let fs = 400;
-      const widest = () => Math.max(...lines.map((l) => { o.font = `500 ${fs}px Geist`; return o.measureText(l).width; }));
-      while (fs > 20 && (widest() > W - padX * 2 || fs * lh * lines.length > H - padBottom - (spot ? 40 : 8))) fs -= 2;
+      const lh = 1.08;
+      const metrics = (fs) => {
+        o.font = `500 ${fs}px Geist`;
+        const ms = lines.map((l) => o.measureText(l));
+        const asc = Math.max(...ms.map((x) => x.actualBoundingBoxAscent));
+        const desc = Math.max(...ms.map((x) => x.actualBoundingBoxDescent));
+        return { ms, asc, desc, w: Math.max(...ms.map((x) => x.width)), h: asc + desc + (lines.length - 1) * fs * lh };
+      };
+      const availH = H - padBottom - (spot ? 48 : 2);
+      let fs = 400, mt = metrics(fs);
+      while (fs > 12 && (mt.w > W - padX * 2 || mt.h > availH)) { fs -= 2; mt = metrics(fs); }
 
-      o.font = `500 ${fs}px Geist`;
       o.fillStyle = "#fff";
       o.textBaseline = "alphabetic";
-      const blockH = fs * lh * lines.length;
-      const top = spot ? (H - padBottom - blockH) / 2 + 10 : (H - blockH) / 2;
-      lines.forEach((l, i) => o.fillText(l, padX - fs * 0.04, top + fs * 0.8 + i * fs * lh));
+      o.textAlign = center ? "center" : "left";
+      const top = spot ? (H - padBottom - mt.h) / 2 + 8 : (H - mt.h) / 2;
+      lines.forEach((l, i) => o.fillText(l, center ? W / 2 : padX, top + mt.asc + i * fs * lh));
 
       const data = o.getImageData(0, 0, W, H).data;
       onDots = [];
@@ -61,7 +69,7 @@
       board.width = canvas.width; board.height = canvas.height;
       const b = board.getContext("2d");
       b.scale(dpr, dpr);
-      b.fillStyle = "rgba(255,255,255,0.055)";
+      b.fillStyle = canvas.dataset.board === "false" ? "rgba(0,0,0,0)" : "rgba(255,255,255,0.055)";
       const r = pitch * 0.3;
       b.beginPath();
       for (let i = 0; i < offDots.length; i += 2) { b.moveTo(offDots[i] + r, offDots[i + 1]); b.arc(offDots[i], offDots[i + 1], r, 0, 6.2832); }
@@ -139,39 +147,57 @@
   }
 
   /* ------------------------------------------------------------------
-     Works : grouped by year. Years left, wall of images, titles right.
+     Works : years on the left, wall of images in the middle, and one
+     panel on the right that describes only the project under the mouse.
   ------------------------------------------------------------------ */
   const works = document.querySelector(".works");
+  const panel = document.querySelector(".panel");
   if (works) {
     const years = [...new Set(P.map((p) => p.year))];
-    works.innerHTML = years.map((y) => {
-      const ps = P.filter((p) => p.year === y);
-      return `<div class="year-row">
+    works.innerHTML = years.map((y) => `<div class="year-row">
         <span class="year mono">${y}</span>
-        <div class="tiles">${ps.map((p) => (p.images || [p.visual]).map((v, k) => `
+        <div class="tiles">${P.filter((p) => p.year === y).map((p) => (p.images || [p.visual]).map((v, k) => `
           <a class="tile${k ? " extra" : ""}" href="work.html?p=${p.slug}" data-slug="${p.slug}"${k ? ' tabindex="-1" aria-hidden="true"' : ""}>
             <div class="frame marked"><i class="mk"></i><div class="ph ${v}"></div></div>
             ${k ? "" : `<div class="cap"><span class="t">${p.title}</span><span class="mono">${p.place}</span></div>`}
           </a>`).join("")).join("")}
         </div>
-        <ul class="titles">${ps.map((p) => `
-          <li><a href="work.html?p=${p.slug}" data-slug="${p.slug}"><span class="t">${p.title}</span><span class="mono">${p.place}</span></a></li>`).join("")}
-        </ul>
-      </div>`;
-    }).join("");
+      </div>`).join("");
 
     const count = document.querySelector("[data-count]");
     if (count) count.textContent = P.length + " projects";
 
-    const light = (slug) => {
-      works.classList.toggle("hovering", !!slug);
-      works.querySelectorAll("[data-slug]").forEach((el) => el.classList.toggle("on", el.dataset.slug === slug));
+    const empty = panel && panel.querySelector(".panel-empty");
+    const info = panel && panel.querySelector(".panel-info");
+    let leaveTimer;
+
+    const show = (slug) => {
+      clearTimeout(leaveTimer);
+      const p = P.find((x) => x.slug === slug);
+      works.classList.add("hovering");
+      works.querySelectorAll(".tile").forEach((el) => el.classList.toggle("on", el.dataset.slug === slug));
+      if (!panel || !p) return;
+      const facts = Object.entries(p.facts).filter(([k]) => k !== "Year" && k !== "Photos");
+      info.innerHTML = `
+        <span class="mono">${p.year}</span>
+        <h3>${p.title}</h3>
+        <dl class="facts">${facts.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
+        <p>${p.intent}</p>
+        <span class="mono">Click to open the project</span>`;
+      empty.hidden = true; info.hidden = false;
     };
-    works.querySelectorAll("[data-slug]").forEach((el) => {
-      el.addEventListener("pointerenter", () => light(el.dataset.slug));
-      el.addEventListener("pointerleave", () => light(null));
-      el.addEventListener("focus", () => light(el.dataset.slug));
-      el.addEventListener("blur", () => light(null));
+    const clear = () => {
+      leaveTimer = setTimeout(() => {
+        works.classList.remove("hovering");
+        works.querySelectorAll(".tile.on").forEach((el) => el.classList.remove("on"));
+        if (panel) { empty.hidden = false; info.hidden = true; }
+      }, 60);
+    };
+    works.querySelectorAll(".tile").forEach((el) => {
+      el.addEventListener("pointerenter", () => show(el.dataset.slug));
+      el.addEventListener("pointerleave", clear);
+      el.addEventListener("focus", () => show(el.dataset.slug));
+      el.addEventListener("blur", clear);
     });
   }
 
