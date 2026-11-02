@@ -363,6 +363,25 @@
     return ink / S;
   }
 
+  /* ------------------------------------------------------------------
+     Home: selected photos fade slowly one into the next behind the title.
+  ------------------------------------------------------------------ */
+  const heroBg = document.querySelector(".hero-bg");
+  if (heroBg && window.HERO && window.HERO.length) {
+    const H = window.HERO;
+    heroBg.innerHTML = H.map((h, i) => `<img src="${h.src}" alt="" ${i ? 'loading="lazy"' : ""} decoding="async">`).join("");
+    const imgs = heroBg.querySelectorAll("img");
+    let cur = 0;
+    imgs[0].classList.add("on");
+    if (!reduce && imgs.length > 1) {
+      setInterval(() => {
+        imgs[cur].classList.remove("on");
+        cur = (cur + 1) % imgs.length;
+        imgs[cur].classList.add("on");
+      }, 6000);
+    }
+  }
+
   const leds = document.querySelectorAll("canvas.led");
   if (leds.length) {
     (document.fonts ? document.fonts.load("500 100px Geist") : Promise.resolve())
@@ -379,11 +398,17 @@
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   const place = (p) => p.facts.Event || p.facts.Place || p.facts.Type || "";
 
+  // the wall shows photos only; videos are kept for the project page
+  const stills = (p) => {
+    const imgs = p.media.filter((m) => m.type === "image");
+    return imgs.length ? imgs : p.media.map((m) => ({ ...m, type: "image", src: m.poster }));
+  };
+
   if (works) {
     const years = [...new Set(P.map((p) => p.year))];
     works.innerHTML = years.map((y) => `<div class="year-row">
         <span class="year mono">${y}</span>
-        <div class="tiles">${P.filter((p) => p.year === y).map((p) => p.media.slice(0, 3).map((m, k) => `
+        <div class="tiles">${P.filter((p) => p.year === y).map((p) => stills(p).slice(0, 3).map((m, k) => `
           <a class="tile${k ? " extra" : ""}" href="work.html?p=${p.slug}" data-slug="${p.slug}"${k ? ' tabindex="-1" aria-hidden="true"' : ""}>
             <div class="frame marked"><i class="mk"></i><img src="${m.thumb}" alt="${k ? "" : esc(p.title)}" loading="lazy" decoding="async"></div>
             ${k ? "" : `<div class="cap"><span class="t">${esc(p.title)}</span><span class="mono">${esc(place(p))}</span></div>`}
@@ -391,13 +416,17 @@
         </div>
       </div>`).join("");
 
-    const count = document.querySelector("[data-count]");
-    if (count) count.textContent = P.length + " projects";
+    const counter = document.querySelector("[data-count]");
+    if (counter) counter.textContent = P.length + " projects";
 
     const empty = panel && panel.querySelector(".panel-empty");
     const info = panel && panel.querySelector(".panel-info");
     let leaveTimer;
 
+    const count = (p) => {
+      const n = p.media.filter((m) => m.type === "image").length, v = p.media.length - n;
+      return [n && `${n} photo${n > 1 ? "s" : ""}`, v && `${v} video${v > 1 ? "s" : ""}`].filter(Boolean).join(", ");
+    };
     const show = (slug) => {
       clearTimeout(leaveTimer);
       const p = P.find((x) => x.slug === slug);
@@ -410,7 +439,7 @@
         <h3>${esc(p.title)}</h3>
         ${facts.length ? `<dl class="facts">${facts.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>` : ""}
         ${p.intent ? `<p>${esc(p.intent)}</p>` : ""}
-        <span class="mono">${p.media.length} ${p.media.length > 1 ? "images" : "image"}. Click to open the project</span>`;
+        <span class="mono">${count(p)}. Click to open the project</span>`;
       empty.hidden = true; info.hidden = false;
     };
     const clear = () => {
