@@ -1,6 +1,252 @@
-// Projects, newest first. Built from the captions of the Instagram archive of @la.cluz.
+// Projects, newest first. Built from the captions of the Instagram archives of @la.cluz and @parall.a.xe.
 // "check" lists facts still to confirm with Louis.
 window.PROJECTS = [
+ {
+  "slug": "grenier-grivois-chateau-perche-2026",
+  "title": "Grenier Grivois, Château Perché 2026",
+  "year": 2026,
+  "check": [],
+  "facts": {
+   "Event": "Château Perché Festival",
+   "Stage": "Grenier Grivois, in the barn",
+   "Role": "Stage design and light creations",
+   "With": "Zora Beyeler, Romeo Dreg",
+   "Light design and operation": "Maxime Hublim, Sarah Josserand, Parall.a.xe",
+   "Booking": "Carra, Elzobo",
+   "Photos": "Romeo Dreg"
+  },
+  "intent": "A barn with stone walls and a twelve-metre timber frame became the Grenier Grivois stage: a darker, enclosed club atmosphere, away from the codes of open-air summer stages. With Zora Beyeler and Romeo Dreg we built around ten unique light fixtures from one reclaimed aluminium profile. One material, one language, endlessly reinterpreted. The fixtures live on the dancefloor and become part of the architecture. Raised platforms spread the energy across the room, so the DJ booth is no longer the only focal point.",
+  "media": [
+   {
+    "type": "image",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/01.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/01-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.114,
+    "chroma": 1,
+    "lum": 0.757
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/17.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/17-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.669,
+    "chroma": 0.897,
+    "lum": 0.469
+   },
+   {
+    "type": "video",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/21.mp4",
+    "poster": "assets/media/grenier-grivois-chateau-perche-2026/21.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/21-t.jpg",
+    "w": 720,
+    "h": 1280,
+    "hue": 0.636,
+    "chroma": 1,
+    "lum": 0.553
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/14.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/14-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.0,
+    "chroma": 0.771,
+    "lum": 0.295
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/16.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/16-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.515,
+    "chroma": 0.334,
+    "lum": 0.305
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/09.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/09-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.883,
+    "chroma": 0.238,
+    "lum": 0.127
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/02.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/02-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.065,
+    "chroma": 1,
+    "lum": 0.488
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/12.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/12-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.685,
+    "chroma": 0.679,
+    "lum": 0.27
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/05.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/05-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.074,
+    "chroma": 0.248,
+    "lum": 0.149
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/10.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/10-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.023,
+    "chroma": 1,
+    "lum": 0.522
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/18.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/18-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.577,
+    "chroma": 0.335,
+    "lum": 0.319
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/19.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/19-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.078,
+    "chroma": 0.281,
+    "lum": 0.231
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/11.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/11-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.023,
+    "chroma": 1,
+    "lum": 0.508
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/03.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/03-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.048,
+    "chroma": 0.026,
+    "lum": 0.133
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/04.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/04-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.082,
+    "chroma": 0.403,
+    "lum": 0.302
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/13.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/13-t.jpg",
+    "w": 1795,
+    "h": 1800,
+    "hue": 0.019,
+    "chroma": 0.27,
+    "lum": 0.236
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/07.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/07-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.031,
+    "chroma": 0.089,
+    "lum": 0.193
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grenier-grivois-chateau-perche-2026/06.jpg",
+    "thumb": "assets/media/grenier-grivois-chateau-perche-2026/06-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.068,
+    "chroma": 0.212,
+    "lum": 0.2
+   }
+  ]
+ },
+ {
+  "slug": "light-as-material-chateau-perche-2026",
+  "title": "Light as Material, Château Perché 2026",
+  "year": 2026,
+  "check": [],
+  "facts": {
+   "Type": "Light fixture, four identical pieces",
+   "Event": "Château Perché Festival",
+   "Material": "Upcycled aluminium profile",
+   "Scenography": "Zora Beyeler, Romeo Dreg",
+   "With": "Parall.a.xe",
+   "Photos": "Romeo Dreg"
+  },
+  "intent": "Light as material, reflection as architecture. Sections of the same aluminium profile, cut, modified and stacked into a sculptural form, built as four identical fixtures. Each one plays with opening and reflection, shaping how light is revealed, concealed and reflected. The structure shapes the light, and the light transforms the structure.",
+  "media": [
+   {
+    "type": "image",
+    "src": "assets/media/light-as-material-chateau-perche-2026/01.jpg",
+    "thumb": "assets/media/light-as-material-chateau-perche-2026/01-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.13,
+    "chroma": 0.036,
+    "lum": 0.057
+   },
+   {
+    "type": "image",
+    "src": "assets/media/light-as-material-chateau-perche-2026/02.jpg",
+    "thumb": "assets/media/light-as-material-chateau-perche-2026/02-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.621,
+    "chroma": 0.039,
+    "lum": 0.075
+   },
+   {
+    "type": "image",
+    "src": "assets/media/light-as-material-chateau-perche-2026/03.jpg",
+    "thumb": "assets/media/light-as-material-chateau-perche-2026/03-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.062,
+    "chroma": 0.035,
+    "lum": 0.11
+   }
+  ]
+ },
  {
   "slug": "grande-muraille-chateau-perche-2025",
   "title": "La Grande Muraille, Château Perché 2025",
@@ -10,12 +256,13 @@ window.PROJECTS = [
    "Event": "Château Perché Festival",
    "Stage": "La Grande Muraille",
    "Role": "Stage design and light design",
-   "With": "Nico Daydreams",
+   "With": "Nico Daydreams, for the Kamiwaza crew",
+   "Installation": "Sun-Waves, analogue light and motorised aluminium shutters",
    "Booking": "Elzobo, Break a Leg",
    "Light crew": "Paul Lestrat, Ian Boucher, Evan Sndtmbr, Maxime Hublim (SBCS)",
    "Materials": "Wood, steel, wood veneer"
   },
-  "intent": "Stage design and light design for La Grande Muraille stage at Château Perché 2025, designed with Nico Daydreams. An intense build, full of powerful emotions.",
+  "intent": "Stage design and light design for La Grande Muraille stage at Château Perché 2025, designed with Nico Daydreams. An intense build, full of powerful emotions. For the stage I designed Sun-Waves, a light installation recalling the early days of LED walls with analogue lighting, combined with kinetic motorised aluminium shutters, blurring light, movement and scenography. This was the founding performance of the Parall.a.xe collective.",
   "media": [
    {
     "type": "image",
@@ -38,6 +285,38 @@ window.PROJECTS = [
     "lum": 0.507
    },
    {
+    "type": "video",
+    "src": "assets/media/grande-muraille-chateau-perche-2025/06.mp4",
+    "poster": "assets/media/grande-muraille-chateau-perche-2025/06.jpg",
+    "thumb": "assets/media/grande-muraille-chateau-perche-2025/06-t.jpg",
+    "w": 720,
+    "h": 720,
+    "hue": 0.014,
+    "chroma": 0.122,
+    "lum": 0.118
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grande-muraille-chateau-perche-2025/05.jpg",
+    "thumb": "assets/media/grande-muraille-chateau-perche-2025/05-t.jpg",
+    "w": 768,
+    "h": 768,
+    "hue": 0.993,
+    "chroma": 0.429,
+    "lum": 0.283
+   },
+   {
+    "type": "video",
+    "src": "assets/media/grande-muraille-chateau-perche-2025/07.mp4",
+    "poster": "assets/media/grande-muraille-chateau-perche-2025/07.jpg",
+    "thumb": "assets/media/grande-muraille-chateau-perche-2025/07-t.jpg",
+    "w": 720,
+    "h": 720,
+    "hue": 0.936,
+    "chroma": 0.048,
+    "lum": 0.066
+   },
+   {
     "type": "image",
     "src": "assets/media/grande-muraille-chateau-perche-2025/04.jpg",
     "thumb": "assets/media/grande-muraille-chateau-perche-2025/04-t.jpg",
@@ -46,6 +325,16 @@ window.PROJECTS = [
     "hue": 0.08,
     "chroma": 0.682,
     "lum": 0.274
+   },
+   {
+    "type": "image",
+    "src": "assets/media/grande-muraille-chateau-perche-2025/08.jpg",
+    "thumb": "assets/media/grande-muraille-chateau-perche-2025/08-t.jpg",
+    "w": 1800,
+    "h": 1800,
+    "hue": 0.077,
+    "chroma": 1,
+    "lum": 0.41
    },
    {
     "type": "image",
@@ -819,9 +1108,11 @@ window.PROJECTS = [
   ]
  }
 ];
-
-// Photos fading behind the title on the home page, in this order (a first proposal, to be chosen by Louis).
 window.HERO = [
+ {
+  "slug": "grenier-grivois-chateau-perche-2026",
+  "src": "assets/media/grenier-grivois-chateau-perche-2026/10.jpg"
+ },
  {
   "slug": "chateau-perche-2022",
   "src": "assets/media/chateau-perche-2022/01.jpg"
@@ -861,5 +1152,9 @@ window.HERO = [
  {
   "slug": "festimas-2024",
   "src": "assets/media/festimas-2024/01.jpg"
+ },
+ {
+  "slug": "grenier-grivois-chateau-perche-2026",
+  "src": "assets/media/grenier-grivois-chateau-perche-2026/18.jpg"
  }
 ];
