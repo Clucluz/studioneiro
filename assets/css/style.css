@@ -286,3 +286,17 @@ img, video { display: block; max-width: 100%; }
   letter-spacing: 0.01em;
   color: #c4c4c4;
 }
+
+/* Real media */
+.tile .frame img { display: block; width: 100%; height: 100%; object-fit: cover; transition: filter .3s; }
+.fill { display: block; width: 100%; height: 100%; object-fit: cover; }
+.project-hero { aspect-ratio: auto; height: min(78vh, 880px); background: #000; }
+.project-hero .fill { object-fit: contain; }
+.gallery .marked { aspect-ratio: auto; }
+.gallery .marked.wide { aspect-ratio: auto; }
+.project-body[hidden] { display: none; }
+.project-body { grid-template-columns: minmax(0, 62ch); }
+@media (max-width: 760px) {
+  .project-hero { height: auto; aspect-ratio: 4 / 5; }
+  .gallery .marked, .gallery .wide { aspect-ratio: auto; }
+}

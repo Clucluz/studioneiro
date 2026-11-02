@@ -376,14 +376,17 @@
   ------------------------------------------------------------------ */
   const works = document.querySelector(".works");
   const panel = document.querySelector(".panel");
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const place = (p) => p.facts.Event || p.facts.Place || p.facts.Type || "";
+
   if (works) {
     const years = [...new Set(P.map((p) => p.year))];
     works.innerHTML = years.map((y) => `<div class="year-row">
         <span class="year mono">${y}</span>
-        <div class="tiles">${P.filter((p) => p.year === y).map((p) => (p.images || [p.visual]).map((v, k) => `
+        <div class="tiles">${P.filter((p) => p.year === y).map((p) => p.media.slice(0, 3).map((m, k) => `
           <a class="tile${k ? " extra" : ""}" href="work.html?p=${p.slug}" data-slug="${p.slug}"${k ? ' tabindex="-1" aria-hidden="true"' : ""}>
-            <div class="frame marked"><i class="mk"></i><div class="ph ${v}"></div></div>
-            ${k ? "" : `<div class="cap"><span class="t">${p.title}</span><span class="mono">${p.place}</span></div>`}
+            <div class="frame marked"><i class="mk"></i><img src="${m.thumb}" alt="${k ? "" : esc(p.title)}" loading="lazy" decoding="async"></div>
+            ${k ? "" : `<div class="cap"><span class="t">${esc(p.title)}</span><span class="mono">${esc(place(p))}</span></div>`}
           </a>`).join("")).join("")}
         </div>
       </div>`).join("");
@@ -401,13 +404,13 @@
       works.classList.add("hovering");
       works.querySelectorAll(".tile").forEach((el) => el.classList.toggle("on", el.dataset.slug === slug));
       if (!panel || !p) return;
-      const facts = Object.entries(p.facts).filter(([k]) => k !== "Year" && k !== "Photos");
+      const facts = Object.entries(p.facts);
       info.innerHTML = `
         <span class="mono">${p.year}</span>
-        <h3>${p.title}</h3>
-        <dl class="facts">${facts.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>
-        <p>${p.intent}</p>
-        <span class="mono">Click to open the project</span>`;
+        <h3>${esc(p.title)}</h3>
+        ${facts.length ? `<dl class="facts">${facts.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>` : ""}
+        ${p.intent ? `<p>${esc(p.intent)}</p>` : ""}
+        <span class="mono">${p.media.length} ${p.media.length > 1 ? "images" : "image"}. Click to open the project</span>`;
       empty.hidden = true; info.hidden = false;
     };
     const clear = () => {
@@ -428,20 +431,27 @@
   /* ------------------------------------------------------------------
      Project page
   ------------------------------------------------------------------ */
+  const mediaEl = (m, cls, eager) => m.type === "video"
+    ? `<video class="${cls}" src="${m.src}" poster="${m.poster}" muted loop playsinline autoplay preload="metadata"></video>`
+    : `<img class="${cls}" src="${m.src}" alt="" ${eager ? "" : 'loading="lazy"'} decoding="async">`;
+
   const proj = document.querySelector("[data-project]");
   if (proj) {
     const slug = new URLSearchParams(location.search).get("p") || P[0].slug;
     const i = Math.max(0, P.findIndex((p) => p.slug === slug));
     const p = P[i];
     document.title = p.title + " — Louis Cluzel";
-    proj.querySelector(".project-hero .ph").classList.add(p.visual);
+    const [first, ...rest] = p.media;
+    proj.querySelector(".project-hero").innerHTML = `<i class="mk"></i>${mediaEl(first, "fill", true)}`;
     proj.querySelector("h1").textContent = p.title;
-    proj.querySelector(".facts").innerHTML = Object.entries(p.facts).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
-    proj.querySelector("[data-intent]").textContent = p.intent;
-    proj.querySelector("[data-making]").textContent = p.making;
-    proj.querySelectorAll(".gallery .ph").forEach((el) => el.classList.add(p.visual));
+    proj.querySelector(".facts").innerHTML = [["Year", p.year], ...Object.entries(p.facts)].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
+    const body = proj.querySelector(".project-body");
+    body.innerHTML = p.intent ? `<section><h2>Intent</h2><p>${esc(p.intent)}</p></section>` : "";
+    body.hidden = !p.intent;
+    proj.querySelector(".gallery").innerHTML = rest.map((m) =>
+      `<div class="marked ${m.w > m.h * 1.15 ? "wide" : ""}" style="aspect-ratio:${m.w} / ${m.h}"><i class="mk"></i>${mediaEl(m, "fill")}</div>`).join("");
     const older = P[i + 1], newer = P[i - 1];
-    proj.querySelector("[data-newer]").innerHTML = newer ? `<a href="work.html?p=${newer.slug}">${newer.title}</a>` : "";
-    proj.querySelector("[data-older]").innerHTML = older ? `<a href="work.html?p=${older.slug}">${older.title}</a>` : `<a href="index.html#works">All works</a>`;
+    proj.querySelector("[data-newer]").innerHTML = newer ? `<a href="work.html?p=${newer.slug}">${esc(newer.title)}</a>` : "";
+    proj.querySelector("[data-older]").innerHTML = older ? `<a href="work.html?p=${older.slug}">${esc(older.title)}</a>` : `<a href="index.html#works">All works</a>`;
   }
 })();
