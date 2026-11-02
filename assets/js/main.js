@@ -5,20 +5,21 @@
   /* ------------------------------------------------------------------
      LED matrix text.
 
-     The text is drawn with Geist on a hidden canvas and sampled on a dot
-     grid: every grid point inside a letter is a lit LED, every other one
-     is an unlit LED of the board.
+     The text is drawn with Geist on a hidden canvas, at twice the size,
+     and every LED of the grid covers one square cell. A LED is lit when
+     the letter covers more than half of its cell. The dot spacing is set
+     so that a vertical stem is exactly a whole number of cells wide, so
+     every stem lights the same number of columns, wherever it falls.
+     The dots of i and j lose their four corner LEDs, so they read round.
 
-     On the home page (data-spot) a follow-spot lights the letters, and
-     now and then, very slowly, LEDs of the board next to the letters
-     light up: either a soft swelling around an edge, as if the letter
-     were dilating, or a trail that spirals away from it. Everything
-     stays on the grid.
+     On the home page (data-spot) a follow-spot lights the letters and,
+     sparsely, single LEDs come loose from the edges of the letters and
+     step outward on the grid while fading, like the letters eroding.
 
      data-lines="Light Design|Portfolio"   lines, separated by |
      data-lines-mobile="..."               alternative lines under 760px
      data-align="center"                   centred lines
-     data-pitch="3"                        dot spacing in px
+     data-pitch="3"                        approximate dot spacing in px
      data-board="false"                    hide the unlit LED board
   ------------------------------------------------------------------ */
   function LED(canvas) {
@@ -29,9 +30,10 @@
     const box = canvas.parentElement;
     const ctx = canvas.getContext("2d");
     let W, H, dpr, pitch, cols, rows, ox, oy, lines;
-    let ink = new Uint8Array(0), onDots = new Float32Array(0), edges = [], board = null;
+    let ink = new Uint8Array(0), onIdx = new Int32Array(0), edges = [], board = null;
     let sx = 0, sy = 0, manual = false, t0 = performance.now();
-    const events = [];
+    const grains = [];          // LEDs coming loose
+    const worn = new Map();     // letter LEDs dimmed for a while after losing a grain
 
     function build() {
       lines = pickLines();
@@ -40,13 +42,14 @@
       canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
       canvas.style.width = W + "px"; canvas.style.height = H + "px";
 
-      pitch = ds.pitch ? +ds.pitch : W < 600 ? 4 : W < 1000 ? 5 : 6;
+      const basePitch = ds.pitch ? +ds.pitch : W < 600 ? 4 : W < 1000 ? 5 : 6;
       const padX = ds.pad !== undefined ? +ds.pad : W < 600 ? 20 : 40;
       const padBottom = spot ? (W < 600 ? 70 : 64) : 0;
 
       // fit the font size to the box, using the real ink bounds of the text
+      const S = 2; // supersampling
       const o = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
-      o.canvas.width = W; o.canvas.height = H;
+      o.canvas.width = W * S; o.canvas.height = H * S;
       const lh = 1.08;
       const metrics = (fs) => {
         o.font = `500 ${fs}px Geist`;
@@ -59,30 +62,62 @@
       let fs = 400, mt = metrics(fs);
       while (fs > 12 && (mt.w > W - padX * 2 || mt.h > availH)) { fs -= 2; mt = metrics(fs); }
 
+      // dot spacing: a whole number of cells per stem
+      const stem = stemWidth(fs);
+      // at least two LEDs per stem when the dots can stay 2.6px apart (phones, small titles)
+      const k = Math.max(stem / 2.6 >= 2 ? 2 : 1, Math.round(stem / basePitch));
+      pitch = stem / k;
+
+      o.setTransform(S, 0, 0, S, 0, 0);
+      o.font = `500 ${fs}px Geist`;
       o.fillStyle = "#fff";
       o.textBaseline = "alphabetic";
       o.textAlign = center ? "center" : "left";
       const top = spot ? (H - padBottom - mt.h) / 2 + 8 : (H - mt.h) / 2;
       lines.forEach((ln, i) => o.fillText(ln, center ? W / 2 : padX, top + mt.asc + i * fs * lh));
 
-      // sample on the grid
+      // coverage of each cell, from a summed-area table of the alpha channel
       cols = Math.floor(W / pitch); rows = Math.floor(H / pitch);
       ox = (W - (cols - 1) * pitch) / 2; oy = (H - (rows - 1) * pitch) / 2;
-      const data = o.getImageData(0, 0, W, H).data;
+      const PW = W * S, PH = H * S;
+      const px = o.getImageData(0, 0, PW, PH).data;
+      const sat = new Float64Array((PW + 1) * (PH + 1));
+      for (let y = 0; y < PH; y++) {
+        let run = 0;
+        for (let x = 0; x < PW; x++) {
+          run += px[(y * PW + x) * 4 + 3];
+          sat[(y + 1) * (PW + 1) + x + 1] = sat[y * (PW + 1) + x + 1] + run;
+        }
+      }
+      const area = (x0, y0, x1, y1) => sat[y1 * (PW + 1) + x1] - sat[y0 * (PW + 1) + x1] - sat[y1 * (PW + 1) + x0] + sat[y0 * (PW + 1) + x0];
+      const clampX = (v) => Math.max(0, Math.min(PW, Math.round(v))), clampY = (v) => Math.max(0, Math.min(PH, Math.round(v)));
+
       ink = new Uint8Array(cols * rows);
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+        const cx = (ox + i * pitch) * S, cy = (oy + j * pitch) * S, h = pitch * S / 2;
+        const x0 = clampX(cx - h), x1 = clampX(cx + h), y0 = clampY(cy - h), y1 = clampY(cy + h);
+        const n = (x1 - x0) * (y1 - y0);
+        if (n > 0 && area(x0, y0, x1, y1) / (255 * n) > 0.5) ink[j * cols + i] = 1;
+      }
+
+      roundDots(k);
+
       const on = [], offPts = [];
       for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
-        const x = ox + i * pitch, y = oy + j * pitch;
-        if (data[(Math.floor(y) * W + Math.floor(x)) * 4 + 3] > 110) { ink[j * cols + i] = 1; on.push(x, y); }
-        else offPts.push(x, y);
+        if (ink[j * cols + i]) on.push(j * cols + i);
+        else offPts.push(ox + i * pitch, oy + j * pitch);
       }
-      onDots = Float32Array.from(on);
+      onIdx = Int32Array.from(on);
 
-      // edge LEDs: lit dots with an unlit neighbour, where the swelling starts
+      // edge LEDs, with the outward direction (away from the ink around them)
       edges = [];
-      for (let j = 1; j < rows - 1; j++) for (let i = 1; i < cols - 1; i++) {
-        const k = j * cols + i;
-        if (ink[k] && (!ink[k - 1] || !ink[k + 1] || !ink[k - cols] || !ink[k + cols])) edges.push(i, j);
+      for (let j = 2; j < rows - 2; j++) for (let i = 2; i < cols - 2; i++) {
+        const c = j * cols + i;
+        if (!ink[c] || (ink[c - 1] && ink[c + 1] && ink[c - cols] && ink[c + cols])) continue;
+        let dx = 0, dy = 0;
+        for (let b = -2; b <= 2; b++) for (let a = -2; a <= 2; a++) if (ink[(j + b) * cols + i + a]) { dx -= a; dy -= b; }
+        const len = Math.hypot(dx, dy);
+        if (len > 0.5) edges.push(i, j, dx / len, dy / len);
       }
 
       // the faint unlit board: every LED of the panel, drawn once
@@ -98,79 +133,70 @@
         b.fill();
       }
 
-      events.length = 0;
+      grains.length = 0; worn.clear();
       if (!sx && !sy) { sx = W * 0.3; sy = H * 0.45; }
       draw(performance.now());
     }
 
-    /* ---- slow swellings and spirals, on the board LEDs ---- */
-
-    const rand = (a, b) => a + Math.random() * (b - a);
-    const free = (i, j) => i >= 0 && j >= 0 && i < cols && j < rows && !ink[j * cols + i];
-
-    function spawn(t) {
-      if (!edges.length) return;
-      const e = Math.floor(Math.random() * (edges.length / 2)) * 2;
-      const ci = edges[e], cj = edges[e + 1];
-      // outward direction: away from the ink around this edge dot
-      let dx = 0, dy = 0;
-      for (let b = -2; b <= 2; b++) for (let a = -2; a <= 2; a++) if (!free(ci + a, cj + b)) { dx -= a; dy -= b; }
-      const ang0 = Math.atan2(dy, dx) + rand(-0.4, 0.4);
-
-      if (Math.random() < 0.55) {
-        // swelling: the board LEDs just outside the letter glow, then fade
-        const R = rand(2.5, 5), pts = [];
-        for (let b = -6; b <= 6; b++) for (let a = -6; a <= 6; a++) {
-          const d = Math.hypot(a, b);
-          if (d <= R && free(ci + a, cj + b)) pts.push(ci + a, cj + b, Math.pow(1 - d / (R + 0.8), 0.7));
+    // i and j dots: small, roughly square blobs of LEDs; drop their four corners
+    function roundDots(k) {
+      const seen = new Uint8Array(cols * rows);
+      const stack = [];
+      for (let s = 0; s < ink.length; s++) {
+        if (!ink[s] || seen[s]) continue;
+        const cells = [];
+        stack.push(s); seen[s] = 1;
+        let minI = 1e9, maxI = -1, minJ = 1e9, maxJ = -1;
+        while (stack.length) {
+          const c = stack.pop(); cells.push(c);
+          const i = c % cols, j = (c - i) / cols;
+          if (i < minI) minI = i; if (i > maxI) maxI = i; if (j < minJ) minJ = j; if (j > maxJ) maxJ = j;
+          for (const n of [c - 1, c + 1, c - cols, c + cols]) {
+            if (n >= 0 && n < ink.length && ink[n] && !seen[n] && Math.abs((n % cols) - i) <= 1) { seen[n] = 1; stack.push(n); }
+          }
         }
-        if (pts.length) events.push({ kind: "swell", pts, t, d: rand(3600, 6000) });
-      } else {
-        // spiral: a trail that unwinds from the letter, one LED at a time
-        const pts = [], seen = new Set(), turn = Math.random() < 0.5 ? 1 : -1;
-        const len = Math.floor(rand(32, 64));
-        for (let s = 1; pts.length / 2 < len && s < 600; s++) {
-          const u = s / 8;
-          const r = 1.5 + u * 1.6;
-          const ang = ang0 + turn * u * 0.9;
-          const i = Math.round(ci + Math.cos(ang) * r), j = Math.round(cj + Math.sin(ang) * r);
-          const key = j * cols + i;
-          if (seen.has(key)) continue;
-          seen.add(key);
-          if (i < 0 || j < 0 || i >= cols || j >= rows) break;
-          if (!free(i, j)) continue;
-          pts.push(i, j);
+        const w = maxI - minI + 1, h = maxJ - minJ + 1;
+        if (w >= 3 && h >= 3 && w <= k + 2 && h <= k + 2 && cells.length >= 0.7 * w * h) {
+          for (const [i, j] of [[minI, minJ], [maxI, minJ], [minI, maxJ], [maxI, maxJ]]) ink[j * cols + i] = 0;
         }
-        if (pts.length >= 8) events.push({ kind: "spiral", pts, t, step: rand(90, 150), tail: rand(1800, 2800) });
       }
     }
 
-    function drawEvents(now, r) {
-      for (let k = events.length - 1; k >= 0; k--) {
-        const ev = events[k], age = now - ev.t;
-        if (ev.kind === "swell") {
-          const u = age / ev.d;
-          if (u >= 1) { events.splice(k, 1); continue; }
-          const env = Math.pow(Math.sin(Math.PI * u), 1.6);
-          for (let p = 0; p < ev.pts.length; p += 3) {
-            const a = 0.75 * env * ev.pts[p + 2];
-            if (a < 0.02) continue;
-            ctx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
-            ctx.beginPath(); ctx.arc(ox + ev.pts[p] * pitch, oy + ev.pts[p + 1] * pitch, r, 0, 6.2832); ctx.fill();
-          }
-        } else {
-          const n = ev.pts.length / 2;
-          if (age > n * ev.step + ev.tail) { events.splice(k, 1); continue; }
-          for (let p = 0; p < n; p++) {
-            const lit = age - p * ev.step;
-            if (lit < 0) break;
-            const fadeIn = Math.min(1, lit / 400), fadeOut = Math.max(0, 1 - lit / ev.tail);
-            const a = 0.8 * fadeIn * fadeOut * (1 - (p / n) * 0.6);
-            if (a < 0.02) continue;
-            ctx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
-            ctx.beginPath(); ctx.arc(ox + ev.pts[2 * p] * pitch, oy + ev.pts[2 * p + 1] * pitch, r, 0, 6.2832); ctx.fill();
-          }
-        }
+    /* ---- erosion: single LEDs come loose and step outward ---- */
+
+    const rand = (a, b) => a + Math.random() * (b - a);
+    const freeCell = (i, j) => i >= 0 && j >= 0 && i < cols && j < rows && !ink[j * cols + i];
+
+    function loosen(t) {
+      if (!edges.length) return;
+      const e = Math.floor(Math.random() * (edges.length / 4)) * 4;
+      const i = edges[e], j = edges[e + 1];
+      let fx = edges[e + 2], fy = edges[e + 3];
+      const a = Math.atan2(fy, fx) + rand(-0.5, 0.5);
+      fx = Math.cos(a); fy = Math.sin(a);
+      // first free cell along the outward direction
+      let ci = i, cj = j;
+      for (let s = 1; s < 4; s++) {
+        const ni = Math.round(i + fx * s), nj = Math.round(j + fy * s);
+        if (freeCell(ni, nj)) { ci = ni; cj = nj; break; }
+      }
+      if (ci === i && cj === j) return;
+      grains.push({ i: ci, j: cj, pi: ci, pj: cj, fx, fy, t, moved: t, step: rand(380, 650), left: Math.floor(rand(3, 9)), a: rand(0.45, 0.7) });
+      worn.set(j * cols + i, { t, d: rand(2500, 4500) });
+    }
+
+    function advance(now) {
+      for (let k = grains.length - 1; k >= 0; k--) {
+        const g = grains[k];
+        if (now - g.moved < g.step) continue;
+        if (g.left-- <= 0) { grains.splice(k, 1); continue; }
+        // next cell: mostly outward, now and then a sideways drift
+        const a = Math.atan2(g.fy, g.fx) + rand(-0.7, 0.7);
+        let ni = Math.round(g.i + Math.cos(a) * 1.2), nj = Math.round(g.j + Math.sin(a) * 1.2);
+        if (ni === g.i && nj === g.j) ni += Math.sign(g.fx) || 1;
+        if (!freeCell(ni, nj)) { grains.splice(k, 1); continue; }
+        g.pi = g.i; g.pj = g.j; g.i = ni; g.j = nj; g.moved = now;
+        g.a *= rand(0.72, 0.86);
       }
     }
 
@@ -183,17 +209,23 @@
       const lit = !spot || (reduce && !manual);
       const R = Math.max(160, Math.min(W, 1200) * 0.24);
 
-      if (spot && !reduce) drawEvents(now, r);
-
       // letters, bucketed by brightness so each level is one path
       const levels = 12, buckets = Array.from({ length: levels }, () => []);
-      for (let i = 0; i < onDots.length; i += 2) {
+      for (let n = 0; n < onIdx.length; n++) {
+        const c = onIdx[n], i = c % cols, j = (c - i) / cols;
+        const x = ox + i * pitch, y = oy + j * pitch;
         let a = 1;
         if (!lit) {
-          const d = Math.hypot(onDots[i] - sx, onDots[i + 1] - sy) / R;
+          const d = Math.hypot(x - sx, y - sy) / R;
           a = 0.2 + 0.8 * Math.max(0, 1 - d * d);
         }
-        buckets[Math.min(levels - 1, Math.floor(a * levels))].push(onDots[i], onDots[i + 1]);
+        const w = worn.size && worn.get(c);
+        if (w) {
+          const u = (now - w.t) / w.d;
+          if (u >= 1) worn.delete(c);
+          else a *= 0.35 + 0.65 * u * u;
+        }
+        buckets[Math.min(levels - 1, Math.floor(a * levels))].push(x, y);
       }
       buckets.forEach((pts, k) => {
         if (!pts.length) return;
@@ -202,12 +234,27 @@
         for (let i = 0; i < pts.length; i += 2) { ctx.moveTo(pts[i] + r, pts[i + 1]); ctx.arc(pts[i], pts[i + 1], r, 0, 6.2832); }
         ctx.fill();
       });
+
+      // loose LEDs: the new cell fades in while the previous one fades out
+      for (const g of grains) {
+        const u = Math.min(1, (now - g.moved) / 220);
+        const glow = Math.min(1, (now - g.t) / 600);
+        const cur = g.a * u * glow, prev = g.a * (1 - u) * 1.15;
+        if (prev > 0.02 && (g.pi !== g.i || g.pj !== g.j)) {
+          ctx.fillStyle = `rgba(255,255,255,${Math.min(1, prev).toFixed(3)})`;
+          ctx.beginPath(); ctx.arc(ox + g.pi * pitch, oy + g.pj * pitch, r, 0, 6.2832); ctx.fill();
+        }
+        if (cur > 0.02) {
+          ctx.fillStyle = `rgba(255,255,255,${cur.toFixed(3)})`;
+          ctx.beginPath(); ctx.arc(ox + g.i * pitch, oy + g.j * pitch, r, 0, 6.2832); ctx.fill();
+        }
+      }
     }
 
     if (spot) {
       // The follow-spot always answers the mouse. The automatic sweep and the
-      // swellings only run when the system allows motion.
-      let raf = 0, last = performance.now(), next = performance.now() + 800;
+      // erosion only run when the system allows motion.
+      let raf = 0, next = performance.now() + 1200;
       const frame = (t) => {
         raf = 0;
         if (!manual && !reduce) {
@@ -215,8 +262,10 @@
           sx = W * (0.5 + 0.42 * Math.sin(k));
           sy = H * (0.45 + 0.18 * Math.sin(k * 1.6));
         }
-        if (!reduce && t > next && events.length < 6) { spawn(t); next = t + rand(900, 2200); }
-        last = t;
+        if (!reduce) {
+          if (t > next && grains.length < 7) { loosen(t); next = t + rand(500, 1300); }
+          advance(t);
+        }
         draw(t);
         if (!reduce || manual) raf = requestAnimationFrame(frame);
       };
@@ -236,6 +285,22 @@
     let rt;
     new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(build, 80); }).observe(box);
     build();
+  }
+
+  // width of a vertical stroke of Geist 500 at a given size, measured on the ink of an "I"
+  function stemWidth(fs) {
+    const S = 4, s = Math.ceil(fs * 1.4 * S);
+    const c = document.createElement("canvas").getContext("2d", { willReadFrequently: true });
+    c.canvas.width = s; c.canvas.height = Math.ceil(fs * 1.2 * S);
+    c.setTransform(S, 0, 0, S, 0, 0);
+    c.font = `500 ${fs}px Geist`;
+    c.fillStyle = "#fff";
+    c.textBaseline = "alphabetic";
+    c.fillText("I", fs * 0.2, fs);
+    const row = c.getImageData(0, Math.round(fs * 0.65 * S), s, 1).data;
+    let ink = 0;
+    for (let x = 0; x < s; x++) ink += row[x * 4 + 3] / 255;
+    return ink / S;
   }
 
   const leds = document.querySelectorAll("canvas.led");
