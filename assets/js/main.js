@@ -93,13 +93,17 @@
       const clampX = (v) => Math.max(0, Math.min(PW, Math.round(v))), clampY = (v) => Math.max(0, Math.min(PH, Math.round(v)));
 
       ink = new Uint8Array(cols * rows);
+      const cov = new Float32Array(cols * rows);
       for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
         const cx = (ox + i * pitch) * S, cy = (oy + j * pitch) * S, h = pitch * S / 2;
         const x0 = clampX(cx - h), x1 = clampX(cx + h), y0 = clampY(cy - h), y1 = clampY(cy + h);
         const n = (x1 - x0) * (y1 - y0);
-        if (n > 0 && area(x0, y0, x1, y1) / (255 * n) > 0.5) ink[j * cols + i] = 1;
+        const c = n > 0 ? area(x0, y0, x1, y1) / (255 * n) : 0;
+        cov[j * cols + i] = c;
+        if (c > 0.5) ink[j * cols + i] = 1;
       }
 
+      evenStems(k, cov);
       roundDots(k);
 
       const on = [], offPts = [];
@@ -136,6 +140,36 @@
       grains.length = 0; worn.clear();
       if (!sx && !sy) { sx = W * 0.3; sy = H * 0.45; }
       draw(performance.now());
+    }
+
+    // Some glyphs (the f, the t) have slightly thinner stems than the I and
+    // light one column less. A straight vertical stretch that is one LED
+    // narrower than the others gets the missing column, on the side the
+    // letter covers most.
+    function evenStems(k, cov) {
+      if (k < 3) return;
+      const minRows = Math.max(4, Math.round(k * 2.5));
+      const runAt = (i, j) => { // start of a horizontal run of exactly k-1 LEDs at (i, j), or -1
+        if (!ink[j * cols + i] || (i > 0 && ink[j * cols + i - 1])) return -1;
+        let n = 0; while (i + n < cols && ink[j * cols + i + n]) n++;
+        return n === k - 1 ? n : -1;
+      };
+      const done = new Uint8Array(cols * rows);
+      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+        if (done[j * cols + i] || runAt(i, j) < 0) continue;
+        let e = j;
+        while (e + 1 < rows && runAt(i, e + 1) >= 0) e++;
+        for (let y = j; y <= e; y++) done[y * cols + i] = 1;
+        if (e - j + 1 < minRows) continue;
+        let left = 0, right = 0;
+        for (let y = j; y <= e; y++) {
+          if (i > 0) left += cov[y * cols + i - 1];
+          if (i + k - 1 < cols) right += cov[y * cols + i + k - 1];
+        }
+        const add = left >= right ? i - 1 : i + k - 1;
+        if (add < 0 || add >= cols) continue;
+        for (let y = j; y <= e; y++) ink[y * cols + add] = 1;
+      }
     }
 
     // i and j dots: small, roughly square blobs of LEDs; drop their four corners
@@ -183,12 +217,37 @@
       if (ci === i && cj === j) return;
       grains.push({ i: ci, j: cj, pi: ci, pj: cj, fx, fy, t, moved: t, step: rand(380, 650), left: Math.floor(rand(3, 9)), a: rand(0.45, 0.7) });
       worn.set(j * cols + i, { t, d: rand(2500, 4500) });
+
+      // one or two companions come loose from the neighbouring edge LEDs, a beat later
+      const extra = Math.random() < 0.5 ? 1 : 2;
+      for (let n = 0; n < extra; n++) {
+        let ni = -1, nj = -1;
+        for (let tries = 0; tries < 12; tries++) {
+          const ti = i + Math.round(rand(-3, 3)), tj = j + Math.round(rand(-3, 3));
+          if (tj < 1 || ti < 1 || tj >= rows - 1 || ti >= cols - 1 || !ink[tj * cols + ti]) continue;
+          const c = tj * cols + ti;
+          if (ink[c - 1] && ink[c + 1] && ink[c - cols] && ink[c + cols]) continue; // not an edge
+          ni = ti; nj = tj; break;
+        }
+        if (ni < 0) continue;
+        const b = Math.atan2(fy, fx) + rand(-0.35, 0.35);
+        const gx = Math.cos(b), gy = Math.sin(b);
+        let gi = -1, gj = -1;
+        for (let s = 1; s < 4; s++) {
+          const pi = Math.round(ni + gx * s), pj = Math.round(nj + gy * s);
+          if (freeCell(pi, pj) && !grains.some((g) => g.i === pi && g.j === pj)) { gi = pi; gj = pj; break; }
+        }
+        if (gi < 0) continue;
+        const delay = rand(150, 700);
+        grains.push({ i: gi, j: gj, pi: gi, pj: gj, fx: gx, fy: gy, t: t + delay, moved: t + delay, step: rand(380, 650), left: Math.floor(rand(2, 7)), a: rand(0.35, 0.6) });
+        worn.set(nj * cols + ni, { t: t + delay, d: rand(2500, 4500) });
+      }
     }
 
     function advance(now) {
       for (let k = grains.length - 1; k >= 0; k--) {
         const g = grains[k];
-        if (now - g.moved < g.step) continue;
+        if (now < g.t || now - g.moved < g.step) continue;
         if (g.left-- <= 0) { grains.splice(k, 1); continue; }
         // next cell: mostly outward, now and then a sideways drift
         const a = Math.atan2(g.fy, g.fx) + rand(-0.7, 0.7);
@@ -237,6 +296,7 @@
 
       // loose LEDs: the new cell fades in while the previous one fades out
       for (const g of grains) {
+        if (now < g.t) continue;
         const u = Math.min(1, (now - g.moved) / 220);
         const glow = Math.min(1, (now - g.t) / 600);
         const cur = g.a * u * glow, prev = g.a * (1 - u) * 1.15;
@@ -263,7 +323,7 @@
           sy = H * (0.45 + 0.18 * Math.sin(k * 1.6));
         }
         if (!reduce) {
-          if (t > next && grains.length < 7) { loosen(t); next = t + rand(500, 1300); }
+          if (t > next && grains.length < 16) { loosen(t); next = t + rand(700, 1600); }
           advance(t);
         }
         draw(t);
