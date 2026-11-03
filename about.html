@@ -3,32 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>About — Louis Cluzel</title>
+<title data-fr="À propos — Louis Cluzel">About — Louis Cluzel</title>
 <meta name="description" content="Louis Cluzel, light designer and scenographer.">
 <link rel="preload" href="assets/fonts/Geist.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 <header class="site-header">
-  <span class="where mono">Light design and scenography, Paris</span>
+  <span class="where mono" data-fr="Conception lumière et scénographie, Paris">Light design and scenography, Paris</span>
   <a class="brand" href="index.html">Louis Cluzel</a>
-  <nav class="site-nav" aria-label="Main">
-    <a href="index.html#works">Work</a>
-    <a href="about.html" aria-current="page">About</a>
+  <nav class="site-nav" aria-label="Main" data-fr-label="Menu principal">
+    <a href="index.html#works" data-fr="Projets">Work</a>
+    <a href="about.html" aria-current="page" data-fr="À propos">About</a>
     <a href="contact.html">Contact</a>
-    <a class="lang" href="#" title="French version coming soon">FR</a>
+    <a class="lang" href="?lang=fr" lang="fr" title="Version française">FR</a>
   </nav>
 </header>
 <main class="stage">
   <div class="text-page">
     <div>
-      <h1 class="sr-only">About</h1>
-      <div class="led-title"><canvas class="led" data-pitch="3" data-lines="About" data-pad="0" data-board="false" aria-hidden="true"></canvas></div>
+      <h1 class="sr-only" data-fr="À propos">About</h1>
+      <div class="led-title"><canvas class="led" data-pitch="3" data-lines="About" data-lines-fr="À propos" data-pad="0" data-board="false" aria-hidden="true"></canvas></div>
     </div>
     <div>
-      <p class="lead">Louis Cluzel is a light designer and scenographer working between installation, stage and exhibition.</p>
-      <p>Placeholder biography. This paragraph will hold the text we write together from your bio: where the practice comes from, how you approach light as a material, and the kinds of places and people you work with.</p>
-      <p>A second paragraph can cover recent work, collaborations and what you are looking for next.</p>
+      <p class="lead" data-fr="Louis Cluzel est concepteur lumière et scénographe. Il travaille là où la lumière rencontre la matière et l'architecture.">Louis Cluzel is a light designer and scenographer, working where light meets material and architecture.</p>
+      <p data-fr="Ingénieur diplômé de CentraleSupélec et designer diplômé du Politecnico di Milano, il mène les deux de front : rêver la pièce, puis la rendre possible. Ce qui s'imagine sur le papier doit tenir, bouger et s'allumer.">Trained as an engineer at CentraleSupélec and as a designer at Politecnico di Milano, he works both sides of every piece: dreaming it up, then making it real. What is drawn on paper has to stand, move and switch on.</p>
+      <p data-fr="Depuis dix ans, il fait la lumière de la musique électronique. Passé par Novelty Group, il collabore au long cours avec des festivals comme Château Perché et Kamiwaza en France, Bucht der Träumer en Allemagne, Komorebi en Italie et Waking Life au Portugal, et jusqu'au Japon.">For ten years he has been lighting electronic music. After Novelty Group, he has built long collaborations with festivals such as Château Perché and Kamiwaza in France, Bucht der Träumer in Germany, Komorebi in Italy and Waking Life in Portugal, and as far as Japan.</p>
+      <p data-fr="Son travail n'est ni de la simple ingénierie lumière, ni de la décoration. Il se tient sur la frontière entre les deux, là où une matière attrape la lumière, où une structure devient source, où mise en scène et lumière ne font plus qu'un geste.">His work is neither plain lighting engineering nor decoration. It lives on the threshold between them: where a material catches light, where a structure becomes the source, where staging and light become a single gesture.</p>
+      <p data-fr="Il crée aussi des objets à la frontière du physique et du numérique.">He also makes objects that sit between the physical and the digital.</p>
     </div>
   </div>
 </main>
@@ -37,6 +39,7 @@
   <a class="mono" href="https://www.instagram.com/la.cluz/">Instagram</a>
 </footer>
 <script src="assets/js/projects.js"></script>
+<script src="assets/js/i18n.js"></script>
 <script src="assets/js/main.js"></script>
 </body>
 </html>

@@ -3,43 +3,43 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Louis Cluzel — Light design</title>
+<title data-fr="Louis Cluzel — Conception lumière">Louis Cluzel — Light design</title>
 <meta name="description" content="Louis Cluzel, light designer and scenographer.">
 <link rel="preload" href="assets/fonts/Geist.woff" as="font" type="font/woff" crossorigin>
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
 <header class="site-header">
-  <span class="where mono">Light design and scenography, Paris</span>
+  <span class="where mono" data-fr="Conception lumière et scénographie, Paris">Light design and scenography, Paris</span>
   <a class="brand" href="index.html">Louis Cluzel</a>
-  <nav class="site-nav" aria-label="Main">
-    <a href="index.html#works" aria-current="page">Work</a>
-    <a href="about.html">About</a>
+  <nav class="site-nav" aria-label="Main" data-fr-label="Menu principal">
+    <a href="index.html#works" aria-current="page" data-fr="Projets">Work</a>
+    <a href="about.html" data-fr="À propos">About</a>
     <a href="contact.html">Contact</a>
-    <a class="lang" href="#" title="French version coming soon">FR</a>
+    <a class="lang" href="?lang=fr" lang="fr" title="Version française">FR</a>
   </nav>
 </header>
 <main class="stage">
   <section class="hero marked">
     <i class="mk"></i>
     <div class="hero-bg" aria-hidden="true"></div>
-    <h1 class="sr-only">Light design portfolio, Louis Cluzel</h1>
+    <h1 class="sr-only" data-fr="Portfolio de conception lumière, Louis Cluzel">Light design portfolio, Louis Cluzel</h1>
     <canvas class="led" data-lines="Light Design|Portfolio" data-lines-mobile="Light|Design|Portfolio" data-align="center" data-spot="true" aria-hidden="true"></canvas>
     <div class="hero-caption">
-      <span class="mono">Light installation and scenography</span>
+      <span class="mono" data-fr="Installation lumière et scénographie">Light installation and scenography</span>
       <span class="mono">Louis Cluzel, Paris</span>
     </div>
   </section>
 
   <section id="works">
     <div class="section-head">
-      <h2>Selected work</h2>
+      <h2 data-fr="Sélection de projets">Selected work</h2>
       <span class="mono" data-count></span>
     </div>
     <div class="works-layout">
       <div class="works"></div>
       <aside class="panel" aria-live="polite">
-        <p class="panel-empty mono">Please select a project</p>
+        <p class="panel-empty mono" data-fr="Sélectionnez un projet">Please select a project</p>
         <div class="panel-info" hidden></div>
       </aside>
     </div>
@@ -51,6 +51,7 @@
   <a class="mono" href="https://www.instagram.com/la.cluz/">Instagram</a>
 </footer>
 <script src="assets/js/projects.js"></script>
+<script src="assets/js/i18n.js"></script>
 <script src="assets/js/main.js"></script>
 </body>
 </html>

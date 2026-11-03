@@ -245,6 +245,9 @@ window.PROJECTS = [
     "chroma": 0.035,
     "lum": 0.11
    }
+  ],
+  "wall": [
+   0
   ]
  },
  {
@@ -391,6 +394,9 @@ window.PROJECTS = [
     "chroma": 0.075,
     "lum": 0.207
    }
+  ],
+  "wall": [
+   0
   ]
  },
  {
@@ -571,6 +577,9 @@ window.PROJECTS = [
     "chroma": 0.143,
     "lum": 0.329
    }
+  ],
+  "wall": [
+   0
   ]
  },
  {
@@ -606,6 +615,9 @@ window.PROJECTS = [
     "chroma": 1,
     "lum": 0.464
    }
+  ],
+  "wall": [
+   0
   ]
  },
  {
@@ -793,6 +805,10 @@ window.PROJECTS = [
     "chroma": 1,
     "lum": 0.411
    }
+  ],
+  "wall": [
+   0,
+   2
   ]
  },
  {
@@ -908,6 +924,9 @@ window.PROJECTS = [
     "chroma": 0.562,
     "lum": 0.32
    }
+  ],
+  "wall": [
+   0
   ]
  },
  {
@@ -1007,6 +1026,9 @@ window.PROJECTS = [
     "chroma": 0.409,
     "lum": 0.142
    }
+  ],
+  "wall": [
+   0
   ]
  },
  {
@@ -1105,6 +1127,9 @@ window.PROJECTS = [
     "chroma": 1,
     "lum": 0.386
    }
+  ],
+  "wall": [
+   0
   ]
  }
 ];

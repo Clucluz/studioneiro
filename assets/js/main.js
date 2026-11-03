@@ -3,6 +3,39 @@
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /* ------------------------------------------------------------------
+     Language. English is in the HTML; French texts sit in data-fr
+     attributes (pages) and in i18n.js (projects and small labels).
+  ------------------------------------------------------------------ */
+  const fr = window.LANG === "fr";
+  const T = fr ? window.FR.ui : {
+    projects: (n) => n + " projects",
+    photos: (n) => n + " photo" + (n > 1 ? "s" : ""),
+    videos: (n) => n + " video" + (n > 1 ? "s" : ""),
+    open: "Click to open the project",
+    year: "Year", intent: "Intent", all: "All works",
+  };
+  if (fr) {
+    document.documentElement.lang = "fr";
+    document.querySelectorAll("[data-fr]").forEach((el) => { el.textContent = el.dataset.fr; });
+    document.querySelectorAll("[data-fr-label]").forEach((el) => el.setAttribute("aria-label", el.dataset.frLabel));
+    // keep the language on internal links, even when the browser keeps no storage
+    document.querySelectorAll('a[href$=".html"], a[href*=".html#"], a[href*=".html?"]').forEach((a) => {
+      const u = new URL(a.getAttribute("href"), location.href);
+      u.searchParams.set("lang", "fr");
+      a.setAttribute("href", u.pathname.split("/").pop() + u.search + u.hash);
+    });
+  }
+  document.querySelectorAll("a.lang").forEach((a) => {
+    const u = new URL(location.href);
+    u.searchParams.set("lang", fr ? "en" : "fr");
+    a.setAttribute("href", u.pathname.split("/").pop() + u.search + u.hash);
+    a.textContent = fr ? "EN" : "FR";
+    a.setAttribute("lang", fr ? "en" : "fr");
+    a.title = fr ? "English version" : "Version française";
+  });
+  const link = (slug) => `work.html?p=${slug}${fr ? "&lang=fr" : ""}`;
+
+  /* ------------------------------------------------------------------
      LED matrix text.
 
      The text is drawn with Geist on a hidden canvas, at twice the size,
@@ -24,7 +57,7 @@
   ------------------------------------------------------------------ */
   function LED(canvas) {
     const ds = canvas.dataset;
-    const pickLines = () => ((window.innerWidth < 760 && ds.linesMobile) || ds.lines).split("|");
+    const pickLines = () => ((window.innerWidth < 760 && ds.linesMobile) || (fr && ds.linesFr) || ds.lines).split("|");
     const spot = ds.spot === "true";
     const center = ds.align === "center";
     const box = canvas.parentElement;
@@ -65,7 +98,9 @@
       // dot spacing: a whole number of cells per stem
       const stem = stemWidth(fs);
       // at least two LEDs per stem when the dots can stay 2.6px apart (phones, small titles)
-      const k = Math.max(stem / 2.6 >= 2 ? 2 : 1, Math.round(stem / basePitch));
+      let k = Math.max(stem / 2.6 >= 2 ? 2 : 1, Math.round(stem / basePitch));
+      // phones: keep the desktop drawing, four LEDs per stem (three if the dots would get too tight)
+      if (W < 760 && k < 4) k = stem / 4 >= 1.8 ? 4 : stem / 3 >= 1.8 ? 3 : k;
       pitch = stem / k;
 
       o.setTransform(S, 0, 0, S, 0, 0);
@@ -396,20 +431,22 @@
   const works = document.querySelector(".works");
   const panel = document.querySelector(".panel");
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-  const place = (p) => p.facts.Event || p.facts.Place || p.facts.Type || "";
+  const place = (p) => { const f = p.facts; return f.Event || f["Événement"] || f.Place || f.Lieu || f.Type || ""; };
 
   // the wall shows photos only; videos are kept for the project page
+  // and only one tile when the photos of a project repeat each other (p.wall)
   const stills = (p) => {
     const imgs = p.media.filter((m) => m.type === "image");
-    return imgs.length ? imgs : p.media.map((m) => ({ ...m, type: "image", src: m.poster }));
+    const all = imgs.length ? imgs : p.media.map((m) => ({ ...m, type: "image", src: m.poster }));
+    return p.wall ? p.wall.map((i) => all[i]).filter(Boolean) : all.slice(0, 3);
   };
 
   if (works) {
     const years = [...new Set(P.map((p) => p.year))];
     works.innerHTML = years.map((y) => `<div class="year-row">
         <span class="year mono">${y}</span>
-        <div class="tiles">${P.filter((p) => p.year === y).map((p) => stills(p).slice(0, 3).map((m, k) => `
-          <a class="tile${k ? " extra" : ""}" href="work.html?p=${p.slug}" data-slug="${p.slug}"${k ? ' tabindex="-1" aria-hidden="true"' : ""}>
+        <div class="tiles">${P.filter((p) => p.year === y).map((p) => stills(p).map((m, k) => `
+          <a class="tile${k ? " extra" : ""}" href="${link(p.slug)}" data-slug="${p.slug}"${k ? ' tabindex="-1" aria-hidden="true"' : ""}>
             <div class="frame marked"><i class="mk"></i><img src="${m.thumb}" alt="${k ? "" : esc(p.title)}" loading="lazy" decoding="async"></div>
             ${k ? "" : `<div class="cap"><span class="t">${esc(p.title)}</span><span class="mono">${esc(place(p))}</span></div>`}
           </a>`).join("")).join("")}
@@ -417,7 +454,7 @@
       </div>`).join("");
 
     const counter = document.querySelector("[data-count]");
-    if (counter) counter.textContent = P.length + " projects";
+    if (counter) counter.textContent = T.projects(P.length);
 
     const empty = panel && panel.querySelector(".panel-empty");
     const info = panel && panel.querySelector(".panel-info");
@@ -425,7 +462,7 @@
 
     const count = (p) => {
       const n = p.media.filter((m) => m.type === "image").length, v = p.media.length - n;
-      return [n && `${n} photo${n > 1 ? "s" : ""}`, v && `${v} video${v > 1 ? "s" : ""}`].filter(Boolean).join(", ");
+      return [n && T.photos(n), v && T.videos(v)].filter(Boolean).join(", ");
     };
     const show = (slug) => {
       clearTimeout(leaveTimer);
@@ -439,7 +476,7 @@
         <h3>${esc(p.title)}</h3>
         ${facts.length ? `<dl class="facts">${facts.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>` : ""}
         ${p.intent ? `<p>${esc(p.intent)}</p>` : ""}
-        <span class="mono">${count(p)}. Click to open the project</span>`;
+        <span class="mono">${count(p)}. ${T.open}</span>`;
       empty.hidden = true; info.hidden = false;
     };
     const clear = () => {
@@ -473,14 +510,14 @@
     const [first, ...rest] = p.media;
     proj.querySelector(".project-hero").innerHTML = `<i class="mk"></i>${mediaEl(first, "fill", true)}`;
     proj.querySelector("h1").textContent = p.title;
-    proj.querySelector(".facts").innerHTML = [["Year", p.year], ...Object.entries(p.facts)].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
+    proj.querySelector(".facts").innerHTML = [[T.year, p.year], ...Object.entries(p.facts)].map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
     const body = proj.querySelector(".project-body");
-    body.innerHTML = p.intent ? `<section><h2>Intent</h2><p>${esc(p.intent)}</p></section>` : "";
+    body.innerHTML = p.intent ? `<section><h2>${T.intent}</h2><p>${esc(p.intent)}</p></section>` : "";
     body.hidden = !p.intent;
     proj.querySelector(".gallery").innerHTML = rest.map((m) =>
       `<div class="marked ${m.w > m.h * 1.15 ? "wide" : ""}" style="aspect-ratio:${m.w} / ${m.h}"><i class="mk"></i>${mediaEl(m, "fill")}</div>`).join("");
     const older = P[i + 1], newer = P[i - 1];
-    proj.querySelector("[data-newer]").innerHTML = newer ? `<a href="work.html?p=${newer.slug}">${esc(newer.title)}</a>` : "";
-    proj.querySelector("[data-older]").innerHTML = older ? `<a href="work.html?p=${older.slug}">${esc(older.title)}</a>` : `<a href="index.html#works">All works</a>`;
+    proj.querySelector("[data-newer]").innerHTML = newer ? `<a href="${link(newer.slug)}">${esc(newer.title)}</a>` : "";
+    proj.querySelector("[data-older]").innerHTML = older ? `<a href="${link(older.slug)}">${esc(older.title)}</a>` : `<a href="index.html${fr ? "?lang=fr" : ""}#works">${T.all}</a>`;
   }
 })();

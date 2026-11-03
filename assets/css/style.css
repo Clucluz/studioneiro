@@ -144,8 +144,8 @@ img, video { display: block; max-width: 100%; }
 
 .tiles {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  gap: 16px;
 }
 
 .tile { display: block; transition: opacity .25s ease; }
